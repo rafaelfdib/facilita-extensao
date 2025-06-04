@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="extensionName">Facilita</title>
+    <link rel="stylesheet" href="libs/quill.snow.css">
+    <!-- Font Awesome CDN Link: Removido x de xintegrity e o valor do hash, pois não era um SRI válido.
+         Para produção, considere hospedar localmente ou usar um SRI hash correto. -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="icons/icon48.png" alt="Facilita Logo">
+                <h1 data-i18n="extensionName">Facilita</h1>
+            </div>
+            <div class="theme-toggle">
+                <button id="themeToggle" data-i18n-title="themeToggleTitle" aria-label="Alternar tema">
+                    <svg id="themeIconSun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg id="themeIconMoon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <nav class="main-tabs">
+            <button class="tablinks active" data-tab="TabModelos" data-i18n="tabTemplates">Modelos</button>
+            <button class="tablinks" data-tab="TabTextTools" data-i18n="tabTextTools">Texto</button>
+            <button class="tablinks" data-tab="TabDocuments" data-i18n="tabDocuments">Docs & Consultas</button>
+            <button class="tablinks" data-tab="TabCEP" data-i18n="tabCEP">CEP & Endereço</button>
+            <button class="tablinks" data-tab="TabLinks" data-i18n="tabLinks">Links Úteis</button>
+            <button class="tablinks" data-tab="TabSettings" data-i18n="tabSettings">Configurações</button>
+            <button class="tablinks" data-tab="TabDocumentation" data-i18n="tabDocumentation">Ajuda</button>
+        </nav>
+
+        <div class="tab-content-wrapper">
+            <div id="TabModelos" class="tabcontent active-tab">
+                <div class="sub-tabs">
+                    <button class="sub-tablinks active" data-subtab="SubTabCreateTemplate" data-i18n="subTabCreateTemplate">Criar Modelo</button>
+                    <button class="sub-tablinks" data-subtab="SubTabMyTemplates" data-i18n="subTabMyTemplates">Meus Modelos</button>
+                </div>
+
+                <div id="SubTabCreateTemplate" class="sub-tabcontent active-sub-tab">
+                    <h2 data-i18n="headingCreateNewTemplate">Criar Novo Modelo</h2>
+                    <form id="templateForm">
+                        <div class="form-group">
+                            <label for="templateName" data-i18n="labelTemplateName">Nome do Modelo (Único):</label>
+                            <input type="text" id="templateName" required data-i18n-placeholder="placeholderTemplateName">
+                        </div>
+                        <div class="form-group">
+                            <label for="templateCategory" data-i18n="labelTemplateCategory">Categoria:</label>
+                            <input type="text" id="templateCategory" data-i18n-placeholder="placeholderTemplateCategory">
+                        </div>
+                        <div class="form-group">
+                            <label for="templateTags" data-i18n="labelTemplateTags">Tags (separadas por vírgula):</label>
+                            <input type="text" id="templateTags" data-i18n-placeholder="placeholderTemplateTags">
+                        </div>
+                        <div class="form-group">
+                            <label for="editorQuill" data-i18n="labelTemplateContent">Conteúdo do Modelo:</label>
+                            <div id="editorQuill"></div>
+                            <div id="createEditorCounter" class="editor-counter">0 caracteres, 0 palavras</div>
+                        </div>
+                        <div class="placeholder-helper">
+                            <p data-i18n="dynamicFieldsHelpText">Clique para inserir campos dinâmicos no editor:</p>
+                            <div id="dynamicFieldsContainerCreate" class="placeholder-buttons">
+                                <button type="button" class="placeholder-btn" data-placeholder="{DATA}" data-i18n-title="titleDATA" data-i18n="fieldDATA"></button>
+                                <button type="button" class="placeholder-btn" data-placeholder="{HORA}" data-i18n-title="titleHORA" data-i18n="fieldHORA"></button>
+                                <button type="button" class="placeholder-btn" data-placeholder="{DATA_HORA}" data-i18n-title="titleDATA_HORA" data-i18n="fieldDATA_HORA"></button>
+                                <button type="button" class="placeholder-btn" data-placeholder="{DD/MM/YYYY}" data-i18n-title="titleDDMMYYYY" data-i18n="fieldDDMMYYYY"></button>
+                                <button type="button" class="placeholder-btn" data-placeholder="{HH:mm:ss}" data-i18n-title="titleHHMMSS" data-i18n="fieldHHMMSS"></button>
+                                <button type="button" class="placeholder-btn" data-placeholder="{SEMANA}" data-i18n-title="titleSEMANA" data-i18n="fieldSEMANA"></button>
+                                <button type="button" class="placeholder-btn" data-placeholder="{URL}" data-i18n-title="titleURL" data-i18n="fieldURL"></button>
+                                <button type="button" class="placeholder-btn" data-placeholder="{TITLE}" data-i18n-title="titleTITLE" data-i18n="fieldTITLE"></button>
+                                <button type="button" class="placeholder-btn" data-placeholder="{CLIPBOARD}" data-i18n-title="titleCLIPBOARD" data-i18n="fieldCLIPBOARD"></button>
+                                <button type="button" class="placeholder-btn" data-placeholder="{VAR:Label}" data-i18n-title="titleVAR" data-i18n="fieldVAR"></button>
+                                <button type="button" class="placeholder-btn" data-placeholder="{INPUT:Instrução}" data-i18n-title="titleINPUT" data-i18n="fieldINPUT"></button>
+                                </div>
+                             <button type="button" id="btnInspecionarPlaceholders" class="btn-secondary" data-i18n="btnInspectPlaceholders">Inspecionar Placeholders</button>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary save-btn" data-i18n="btnSaveTemplate"><i class="fa-solid fa-save"></i> Salvar Modelo</button>
+                            <button type="reset" id="btnClearCreateForm" class="btn-secondary" data-i18n="btnClearForm">Limpar</button>
+                        </div>
+                        <div id="feedbackAreaCreate" class="feedback-area"></div>
+                    </form>
+                </div>
+
+                <div id="SubTabMyTemplates" class="sub-tabcontent">
+                    <h2 data-i18n="headingMyTemplates">Meus Modelos</h2>
+                    <div class="toolbar">
+                        <input type="search" id="searchInputTemplates" data-i18n-placeholder="placeholderSearchTemplates">
+                        <select id="sortOptions" data-i18n-aria-label="labelSortOptions">
+                            <option value="name_asc" data-i18n="sortNameAsc">Nome (A-Z)</option>
+                            <option value="name_desc" data-i18n="sortNameDesc">Nome (Z-A)</option>
+                            <option value="date_new" data-i18n="sortDateNew">Mais Recentes</option>
+                            <option value="date_old" data-i18n="sortDateOld">Mais Antigos</option>
+                        </select>
+                    </div>
+                    <div class="toolbar">
+                        <input type="search" id="tagSearchInput" data-i18n-placeholder="placeholderTagSearch" style="flex-grow: 1;" autocomplete="off">
+                        <div id="tagSuggestions" class="suggestions-list"></div>
+                    </div>
+                    <div id="categoriesFilter" class="category-filters">
+                        <button class="category-filter active" data-category="all" data-i18n="categoryFilterAll">Todas</button>
+                    </div>
+                    <div id="bulkActionsToolbar" style="display: none;">
+                        <h4 id="bulkActionsHeadingElement"><span data-i18n="bulkActionsHeading">Ações em Massa</span> (<span id="bulkSelectedCount">0</span> <span data-i18n="bulkActionsSelected">selecionados</span>):</h4>
+                        <div class="bulk-actions-controls">
+                            <button id="bulkSelectAllBtn" class="btn-secondary small-btn" data-i18n="btnBulkSelectVisible">Selecionar Visíveis</button>
+                            <button id="bulkDeselectAllBtn" class="btn-secondary small-btn" data-i18n="btnBulkDeselectAll">Desselecionar Todos</button>
+                            <button id="bulkDeleteBtn" class="delete-btn small-btn icon-btn" data-i18n-title="btnBulkDeleteSelected"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                        <div class="bulk-actions-controls">
+                            <div class="bulk-category-action">
+                                <input type="text" id="bulkCategoryInput" data-i18n-placeholder="placeholderBulkCategory">
+                                <button id="bulkAddCategoryBtn" class="save-btn small-btn icon-btn" data-i18n-title="btnAddCategoryToSelected"><i class="fa-solid fa-folder-plus"></i></button>
+                            </div>
+                            <div class="bulk-tags-action">
+                                <input type="text" id="bulkTagsInput" data-i18n-placeholder="placeholderBulkTags">
+                                <button id="bulkAddTagsBtn" class="save-btn small-btn icon-btn" data-i18n-title="btnAddTagsToSelected"><i class="fa-solid fa-tags"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="templatesList" aria-live="polite">
+                        <p class="empty-list-msg" data-i18n="loadingTemplates">Carregando modelos...</p>
+                    </div>
+                    <div id="loadMoreContainer" class="load-more-container" style="display: none;">
+                        <button id="loadMoreBtn" class="btn-secondary" data-i18n="btnLoadMore">Carregar Mais</button>
+                    </div>
+                    <div id="feedbackAreaList" class="feedback-area"></div>
+                </div>
+            </div>
+
+            <div id="TabTextTools" class="tabcontent">
+                <div class="sub-tabs">
+                    <button class="sub-tablinks active" data-subtab="SubTabNumberToText" data-i18n="subTabNumberToText">Número por Extenso</button>
+                    <button class="sub-tablinks" data-subtab="SubTabCleanText" data-i18n="subTabCleanText">Limpeza de Texto</button>
+                </div>
+
+                <div id="SubTabNumberToText" class="sub-tabcontent active-sub-tab">
+                    <h2 data-i18n="subTabNumberToText">Número por Extenso</h2>
+                    <div class="form-group">
+                        <label for="numeroParaExtenso" data-i18n="labelNumberToConvert">Digite o número:</label>
+                        <input type="text" id="numeroParaExtenso" data-i18n-placeholder="placeholderNumberToConvert">
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="usarReais">
+                            <label for="usarReais" data-i18n="checkboxConvertToCurrency">Converter para valor monetário (R$)</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="numeroFeminino">
+                            <label for="numeroFeminino" data-i18n="checkboxUseFeminine">Usar gênero feminino</label>
+                        </div>
+                    </div>
+                    <button id="btnConverterExtenso" class="btn-primary" data-i18n="btnConvert">Converter</button>
+                    <div class="result-box">
+                        <h3 data-i18n="labelResult">Resultado:</h3>
+                        <div id="resultadoExtenso" class="result-content"></div>
+                        <button id="btnCopiarExtenso" class="btn-secondary" data-i18n="btnCopiar" disabled>Copiar</button>
+                    </div>
+                </div>
+
+                <div id="SubTabCleanText" class="sub-tabcontent">
+                    <h2 data-i18n="subTabCleanText">Limpeza de Texto Avançada</h2>
+                    <div class="text-cleaning-container">
+                        <div class="text-area-container">
+                            <label for="textoParaLimpar" data-i18n="labelOriginalText">Texto Original:</label>
+                            <textarea id="textoParaLimpar" data-i18n-placeholder="placeholderCleanText"></textarea>
+                            <div id="contadorTextoOriginal" class="text-counter">0 caracteres, 0 palavras</div>
+                        </div>
+
+                        <div class="cleaning-options">
+                            <h3 data-i18n="headingCleaningOptions">Opções de Limpeza</h3>
+                            <div class="checkbox-group"><input type="checkbox" id="unirParagrafos"><label for="unirParagrafos" data-i18n="checkboxJoinParagraphs"></label></div>
+                            <div class="checkbox-group"><input type="checkbox" id="removerEspacosDuplos"><label for="removerEspacosDuplos" data-i18n="checkboxRemoveDoubleSpaces"></label></div>
+                            <div class="checkbox-group"><input type="checkbox" id="removerEspacosBordas"><label for="removerEspacosBordas" data-i18n="checkboxTrimLines"></label></div>
+                            <div class="checkbox-group"><input type="checkbox" id="converterMaiusculas"><label for="converterMaiusculas" data-i18n="checkboxToUpperCase"></label></div>
+                            <div class="checkbox-group"><input type="checkbox" id="converterMinusculas"><label for="converterMinusculas" data-i18n="checkboxToLowerCase"></label></div>
+                            <div class="checkbox-group"><input type="checkbox" id="converterTitulo"><label for="converterTitulo" data-i18n="checkboxToTitleCase"></label></div>
+                            <div class="checkbox-group"><input type="checkbox" id="removerMarcadores"><label for="removerMarcadores" data-i18n="checkboxRemoveListMarkers"></label></div>
+
+                            <div class="find-replace-container">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="habilitarFindReplace">
+                                    <label for="habilitarFindReplace" data-i18n="checkboxEnableFindReplace"></label>
+                                </div>
+                                <div class="find-replace-fields">
+                                    <input type="text" id="findText" data-i18n-placeholder="placeholderFindText" disabled>
+                                    <input type="text" id="replaceText" data-i18n-placeholder="placeholderReplaceText" disabled>
+                                </div>
+                            </div>
+
+                            <div class="sort-options">
+                                <label for="ordenarLinhasSelect" data-i18n="labelSortLines"></label>
+                                <select id="ordenarLinhasSelect">
+                                    <option value="" data-i18n="optionSortNone"></option>
+                                    <option value="asc" data-i18n="optionSortAsc"></option>
+                                    <option value="desc" data-i18n="optionSortDesc"></option>
+                                </select>
+                            </div>
+                            <button id="btnAplicarLimpeza" class="btn-primary" data-i18n="btnApplyCleaning">Aplicar Limpeza</button>
+                        </div>
+
+                        <div class="text-area-container">
+                            <label for="textoLimpoResultado" data-i18n="labelCleanedText">Resultado:</label>
+                            <textarea id="textoLimpoResultado" readonly></textarea>
+                            <div id="contadorTextoLimpo" class="text-counter">0 caracteres, 0 palavras</div>
+                            <button id="btnCopiarLimpo" class="btn-secondary" data-i18n="btnCopyCleaned" disabled>Copiar Resultado</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="TabDocuments" class="tabcontent">
+                <div class="sub-tabs">
+                    <button class="sub-tablinks active" data-subtab="SubTabFormatDocuments" data-i18n="subTabFormatDocuments">Formatar Docs</button>
+                    <button class="sub-tablinks" data-subtab="SubTabProcessQuery" data-i18n="subTabProcessQuery">Consultar Processo</button>
+                </div>
+
+                <div id="SubTabFormatDocuments" class="sub-tabcontent active-sub-tab">
+                    <h2 data-i18n="headingFormatDocuments">Formatar Documentos</h2>
+                    <div class="form-group">
+                        <label for="docTipoSelect" data-i18n="labelDocType">Tipo de Documento:</label>
+                        <select id="docTipoSelect">
+                            <option value="cpf" data-i18n="optionDocCPF">CPF</option>
+                            <option value="cnpj" data-i18n="optionDocCNPJ">CNPJ</option>
+                            <option value="rg" data-i18n="optionDocRG">RG</option>
+                            <option value="processo" data-i18n="optionDocProcessCNJ">Processo CNJ</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="docNumeroInput" data-i18n="labelDocNumber">Número:</label>
+                        <input type="text" id="docNumeroInput" data-i18n-placeholder="placeholderDocNumber">
+                    </div>
+                    <div class="button-group">
+                        <button id="btnFormatarDoc" class="btn-primary" data-i18n="btnFormatDoc">Formatar</button>
+                        <button id="btnLimparDoc" class="btn-secondary" data-i18n="btnClearDocFormatting">Limpar Formatação</button>
+                    </div>
+                    <div class="result-box">
+                        <h3 data-i18n="labelResult">Resultado:</h3>
+                        <div id="resultadoDocFormatado" class="result-content"></div>
+                        <button id="btnCopiarDocFormatado" class="btn-secondary" data-i18n="btnCopiar" disabled>Copiar</button>
+                    </div>
+                </div>
+
+                <div id="SubTabProcessQuery" class="sub-tabcontent">
+                    <h2 data-i18n="headingProcessQueryTJSP">Consulta de Processo TJSP</h2>
+                    <div class="form-group">
+                        <label for="numeroProcessoTJSP" data-i18n="labelProcessNumberCNJ">Número do Processo (CNJ):</label>
+                        <input type="text" id="numeroProcessoTJSP" data-i18n-placeholder="placeholderProcessNumberCNJ">
+                    </div>
+                    <div class="form-group">
+                        <label for="selectInstanciaTJSP" data-i18n="labelInstance">Instância:</label>
+                        <select id="selectInstanciaTJSP">
+                            <option value="1" data-i18n="optionInstance1">1º Grau</option>
+                            <option value="2" data-i18n="optionInstance2">2º Grau</option>
+                        </select>
+                    </div>
+                    <button id="btnGerarLinkProcesso" class="btn-primary" data-i18n="btnGenerateLink">Gerar Link</button>
+                    <div class="result-box">
+                        <h3 data-i18n="labelLinkForResult">Link para Consulta:</h3>
+                        <div id="resultadoLinkProcesso" class="result-content"></div>
+                        </div>
+                </div>
+            </div>
+
+            <div id="TabCEP" class="tabcontent">
+                <div class="sub-tabs">
+                    <button class="sub-tablinks active" data-subtab="SubTabAddressByCEP" data-i18n="subTabAddressByCEP">Endereço por CEP</button>
+                    <button class="sub-tablinks" data-subtab="SubTabCEPByAddress" data-i18n="subTabCEPByAddress">CEP por Endereço</button>
+                </div>
+
+                <div id="SubTabAddressByCEP" class="sub-tabcontent active-sub-tab">
+                    <h2 data-i18n="headingAddressByCEP">Buscar Endereço por CEP</h2>
+                    <div class="form-group">
+                        <label for="cep" data-i18n="labelCEP">CEP:</label>
+                        <input type="text" id="cep" data-i18n-placeholder="placeholderCEP" maxlength="8">
+                    </div>
+                    <button id="buscarCepBtn" class="btn-primary" data-i18n="btnSearch">Buscar</button>
+                    <div class="result-box">
+                        <h3 data-i18n="labelResult">Resultado:</h3>
+                        <div id="resultadoCep" class="result-content"></div>
+                        <button id="btnCopiarEndereco" class="btn-secondary" data-i18n="btnCopyAddress" disabled>Copiar Endereço</button>
+                    </div>
+                </div>
+
+                <div id="SubTabCEPByAddress" class="sub-tabcontent">
+                    <h2 data-i18n="headingCEPByAddress">Buscar CEP por Endereço</h2>
+                    <div class="form-group">
+                        <label for="uf" data-i18n="labelUF">UF:</label>
+                        <input type="text" id="uf" data-i18n-placeholder="placeholderUF" maxlength="2">
+                    </div>
+                    <div class="form-group">
+                        <label for="cidade" data-i18n="labelCity">Cidade:</label>
+                        <input type="text" id="cidade" data-i18n-placeholder="placeholderCity">
+                    </div>
+                    <div class="form-group">
+                        <label for="logradouro" data-i18n="labelStreet">Logradouro:</label>
+                        <input type="text" id="logradouro" data-i18n-placeholder="placeholderStreet">
+                    </div>
+                    <button id="buscarEnderecoBtn" class="btn-primary" data-i18n="btnSearch">Buscar</button>
+                    <div class="result-box">
+                        <h3 data-i18n="labelResult">Resultado:</h3>
+                        <div id="resultadoEndereco" class="result-content"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="TabLinks" class="tabcontent">
+                <div class="sub-tabs">
+                    <button class="sub-tablinks active" data-subtab="SubTabSavedLinks" data-i18n="subTabSavedLinks">Links Salvos</button>
+                    <button class="sub-tablinks" data-subtab="SubTabQuickLinksPanel" data-i18n="subTabQuickLinksPanel">Painel de Links</button>
+                </div>
+
+                <div id="SubTabSavedLinks" class="sub-tabcontent active-sub-tab">
+                    <h2 data-i18n="headingSavedLinks">Links Salvos</h2>
+                    <fieldset class="form-add-link-lista">
+                        <legend data-i18n="legendAddLink">Adicionar Novo Link</legend>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="listaLinkNomeInput" data-i18n="labelLinkName">Nome:</label>
+                                <input type="text" id="listaLinkNomeInput" data-i18n-placeholder="placeholderLinkName">
+                            </div>
+                            <div class="form-group">
+                                <label for="listaLinkUrlInput" data-i18n="labelLinkURL">URL:</label>
+                                <input type="text" id="listaLinkUrlInput" data-i18n-placeholder="placeholderLinkURL">
+                            </div>
+                        </div>
+                         <div class="form-group">
+                            <label for="listaLinkCategoriaInput" data-i18n="labelTemplateCategory">Categoria:</label>
+                            <input type="text" id="listaLinkCategoriaInput" data-i18n-placeholder="placeholderTemplateCategory">
+                        </div>
+                        <button id="btnAddLinkLista" class="btn-primary" data-i18n="btnAddToList">Adicionar à Lista</button>
+                    </fieldset>
+                    <div id="listaLinksSalvosContainer" class="links-list-container">
+                        <p class="empty-list-message" data-i18n="feedbackNoLinksSaved"></p>
+                    </div>
+                </div>
+
+                <div id="SubTabQuickLinksPanel" class="sub-tabcontent">
+                    <h2 data-i18n="headingQuickLinksPanel">Painel de Links Rápidos</h2>
+                    <div id="linkCategoryFiltersContainer" class="category-filters">
+                        <button class="category-filter active" data-category="todos" data-i18n="categoryFilterAll">Todos</button>
+                        <button class="category-filter" data-category="tjsp" data-i18n="categoryTJSP">TJSP</button>
+                        <button class="category-filter" data-category="legislacao" data-i18n="categoryLegislation">Legislação</button>
+                        <button class="category-filter" data-category="tribunais" data-i18n="categoryTribunals">Tribunais</button>
+                        <button class="category-filter" data-category="consultas" data-i18n="categoryQueries">Consultas</button>
+                        <button class="category-filter" data-category="outros" data-i18n="categoryOther">Outros</button>
+                    </div>
+                    <div id="linkCardsContainer" class="link-cards-container">
+                        <p class="empty-list-message" data-i18n="feedbackNoDefaultLinks"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="TabSettings" class="tabcontent">
+                <h2 data-i18n="headingSettings">Configurações</h2>
+
+                <div class="settings-section">
+                    <h3 data-i18n="headingAppearance">Aparência</h3>
+                    <div class="settings-option checkbox-group">
+                        <input type="checkbox" id="configTemaEscuro" data-i18n-aria-label="ariaLabelDarkMode">
+                        <label for="configTemaEscuro" data-i18n="labelDarkMode">Modo Escuro</label>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 data-i18n="labelLanguage">Idioma da Interface:</h3>
+                     <div class="form-group">
+                        <select id="configIdioma">
+                            <option value="pt_BR" data-i18n="optionLangPtBr">Português (Brasil)</option>
+                            <option value="en" data-i18n="optionLangEn">English</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 data-i18n="headingCustomConstants">Constantes Personalizadas (Valor Fixo)</h3>
+                    <p class="info-note" data-i18n="helpTextCustomConstants"></p>
+                    <div class="form-inline">
+                        <input type="text" id="constanteNome" data-i18n-placeholder="placeholderConstantName" pattern="[A-Z0-9_]+" data-i18n-title="titleConstantNamePattern">
+                        <input type="text" id="constanteValor" data-i18n-placeholder="placeholderConstantValue">
+                    </div>
+                     <div class="form-group">
+                        <label for="constanteFormato" data-i18n="labelConstantFormat">Formato de Saída:</label>
+                        <select id="constanteFormato">
+                            <option value="texto" data-i18n="optionFormatText">Texto</option>
+                            <option value="extenso" data-i18n="optionFormatExtenso">Número por Extenso</option>
+                            <option value="extenso_moeda" data-i18n="optionFormatExtensoMoeda">Moeda por Extenso</option>
+                            <option value="extenso_f" data-i18n="optionFormatExtensoFeminino">Número por Extenso (Feminino)</option>
+                        </select>
+                    </div>
+                    <button id="btnAdicionarConstante" class="btn-primary" data-i18n="btnAddConstant">Adicionar Constante</button>
+                    <div id="listaConstantes" class="constants-list">
+                        <p class="empty-list-message" data-i18n="feedbackNoConstants"></p>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 data-i18n="headingReusableVariables">Variáveis Reutilizáveis (Valor Solicitado ao Usar)</h3>
+                    <p class="info-note" data-i18n="helpTextReusableVariables"></p>
+                    <div class="form-inline">
+                        <input type="text" id="newReusableVariableName" data-i18n-placeholder="placeholderReusableVariableName" pattern="[A-Z0-9_]+" data-i18n-title="titleConstantNamePattern">
+                        <button type="button" id="addReusableVariableBtn" class="btn-primary" data-i18n="btnAddReusableVariable">Adicionar Variável</button>
+                    </div>
+                    <div id="reusableVariablesList" class="constants-list">
+                         <p class="empty-list-message" data-i18n="feedbackNoReusableVars"></p>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 data-i18n="headingBackupRestore">Backup e Restauração</h3>
+                    <p class="info-note" data-i18n="helpTextBackupRestore"></p>
+                    <div class="button-group">
+                        <button id="btnExportarModelos" class="btn-secondary" data-i18n="btnExportModels">Exportar Modelos</button>
+                        <button id="btnImportarModelos" class="btn-secondary" data-i18n="btnImportModels">Importar Modelos</button>
+                    </div>
+                     <div class="button-group">
+                        <button id="btnExportarConfig" class="btn-secondary" data-i18n="btnExportAll">Exportar Tudo (Modelos e Configs)</button>
+                        <button id="btnImportarConfig" class="btn-secondary" data-i18n="btnImportFile">Importar Tudo</button>
+                        <input type="file" id="importConfigInput" accept=".json" style="display: none;" aria-hidden="true">
+                    </div>
+                </div>
+                 <div id="feedbackAreaSettings" class="feedback-area"></div>
+            </div>
+
+            <div id="TabDocumentation" class="tabcontent">
+                <div class="documentation-content">
+                    <h2 data-i18n="docHeading">Documentação - Facilita</h2>
+                    <p class="doc-intro" data-i18n="docIntro"></p>
+                    <hr class="doc-hr">
+
+                    <h3 data-i18n="docGettingStarted"></h3>
+                    <ol class="doc-ol">
+                        <li><strong data-i18n="docCreateSimpleTemplate"></strong>
+                            <ul>
+                                <li data-i18n="docGoToCreateTab"></li>
+                                <li data-i18n="docGiveUniqueName"></li>
+                                <li data-i18n="docEnterText"></li>
+                                <li data-i18n="docClickSave"></li>
+                            </ul>
+                        </li>
+                        <li><strong data-i18n="docUseTemplate"></strong>
+                            <ul>
+                                <li data-i18n="docGoToMyTemplatesTab"></li>
+                                <li data-i18n="docFindTemplate"></li>
+                                <li data-i18n="docClickCopy"></li>
+                                <li data-i18n="docPasteText"></li>
+                            </ul>
+                        </li>
+                        <li><strong data-i18n="docOrganizeOptional"></strong>
+                            <ul>
+                                <li data-i18n="docAddCategory"></li>
+                                <li data-i18n="docAddTags"></li>
+                                <li data-i18n="docUseFilters"></li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <hr class="doc-hr">
+
+                    <h3 data-i18n="docPlaceholdersHeading"></h3>
+                    <p data-i18n="docPlaceholdersIntro"></p>
+
+                    <details class="doc-details">
+                        <summary class="doc-summary"><strong data-i18n="docAutoPlaceholders"></strong></summary>
+                        <div class="doc-dl">
+                            <p data-i18n="docAutoPlaceholdersDesc"></p>
+                            <dl>
+                                <dt><code>{DATA}</code></dt><dd data-i18n="docPH_DATA"></dd>
+                                <dt><code>{HORA}</code></dt><dd data-i18n="docPH_HORA"></dd>
+                                <dt><code>{DATA_HORA}</code></dt><dd data-i18n="docPH_DATA_HORA"></dd>
+                                <dt><code>{DD/MM/YYYY}</code></dt><dd data-i18n="docPH_DDMMYYYY"></dd>
+                                <dt><code>{HH:mm:ss}</code></dt><dd data-i18n="docPH_HHMMSS"></dd>
+                                <dt><code>{SEMANA}</code></dt><dd data-i18n="docPH_SEMANA"></dd>
+                                <dt><code>{URL}</code></dt><dd data-i18n="docPH_URL"></dd>
+                                <dt><code>{TITLE}</code></dt><dd data-i18n="docPH_TITLE"></dd>
+                                <dt><code>{CLIPBOARD}</code></dt><dd data-i18n="docPH_CLIPBOARD"></dd>
+                            </dl>
+                        </div>
+                    </details>
+
+                    <details class="doc-details">
+                        <summary class="doc-summary"><strong data-i18n="docCustomConstants"></strong></summary>
+                        <div class="doc-dl">
+                            <p data-i18n="docCustomConstantsDesc"></p>
+                            <dl>
+                                <dt><strong data-i18n="docCCD_Definition"></strong></dt>
+                                <dd data-i18n="docCCD_DefExample"></dd>
+                                <dt><strong data-i18n="docCCD_UsageInTemplate"></strong></dt>
+                                <dd data-i18n="docCCD_UsageExample"></dd>
+                                <dt><strong data-i18n="docCCD_ResultOnCopy"></strong></dt>
+                                <dd data-i18n="docCCD_ResultExample"></dd>
+                            </dl>
+                            <p data-i18n="docCCD_NamingRules"></p>
+                        </div>
+                    </details>
+
+                    <details class="doc-details">
+                        <summary class="doc-summary"><strong data-i18n="docVariables"></strong></summary>
+                        <div class="doc-dl">
+                            <p data-i18n="docVariablesDesc"></p>
+                            <dl>
+                                <dt><strong data-i18n="docVR_Reusable"></strong></dt>
+                                <dd data-i18n="docVR_ReusableDesc"></dd>
+                                <dt><strong data-i18n="docVR_Instance"></strong></dt>
+                                <dd data-i18n="docVR_InstanceDesc"></dd>
+                                <dt><strong data-i18n="docVR_Input"></strong></dt>
+                                <dd data-i18n="docVR_InputDesc"></dd>
+                            </dl>
+                            <p data-i18n="docVR_Tip"></p>
+                        </div>
+                    </details>
+
+                    <details class="doc-details">
+                        <summary class="doc-summary"><strong data-i18n="docInvokingTemplates"></strong></summary>
+                        <div class="doc-dl">
+                            <p data-i18n="docInvokingDesc"></p>
+                            <dl>
+                                <dt><strong data-i18n="docIT_Usage"></strong></dt>
+                                <dd data-i18n="docIT_UsageExample"></dd>
+                                <dd data-i18n="docIT_UsageDesc"></dd>
+                                <dt><strong data-i18n="docIT_Warning"></strong></dt>
+                                <dd data-i18n="docIT_WarningDesc"></dd>
+                            </dl>
+                        </div>
+                    </details>
+
+                    <details class="doc-details">
+                        <summary class="doc-summary"><strong data-i18n="docAdvancedFormatting"></strong></summary>
+                        <div class="doc-dl">
+                            <p data-i18n="docAdvancedFormattingDesc"></p>
+                            <ul>
+                                <li data-i18n="docAF_Extenso"></li>
+                                <li data-i18n="docAF_ExtensoMoeda"></li>
+                                <li data-i18n="docAF_ExtensoF"></li>
+                                <li data-i18n="docAF_Decimal"></li>
+                                <li data-i18n="docAF_Milhar"></li>
+                                <li data-i18n="docAF_Moeda"></li>
+                                <li data-i18n="docAF_Porcentagem"></li>
+                                <li data-i18n="docAF_DataFormat"></li>
+                            </ul>
+                        </div>
+                    </details>
+                    <hr class="doc-hr">
+
+                    <h3 data-i18n="docAdvancedExamples"></h3>
+                    <details class="doc-details">
+                        <summary class="doc-summary"><strong data-i18n="docEx1_Title"></strong></summary>
+                        <div class="doc-dl">
+                            <p data-i18n="docEx1_Setup"></p>
+                            <ul>
+                                <li data-i18n="docEx1_Constant"></li>
+                                <li data-i18n="docEx1_ReusableVar"></li>
+                            </ul>
+                            <p><strong data-i18n="docEx1_HeaderTemplate"></strong></p>
+                            <code><pre data-i18n="docEx1_HeaderContent"></pre></code>
+                            <p><strong data-i18n="docEx1_BodyTemplate"></strong></p>
+                            <code><pre data-i18n="docEx1_BodyContent"></pre></code>
+                            <p><strong data-i18n="docEx1_FullEmailTemplate"></strong></p>
+                            <code><pre data-i18n="docEx1_FullEmailContent"></pre></code>
+                            <p data-i18n="docEx1_ProcessOnCopy"></p>
+                            <ol>
+                                <li data-i18n="docEx1_P_Step1"></li>
+                                <li data-i18n="docEx1_P_Step2"></li>
+                                <li data-i18n="docEx1_P_Step3"></li>
+                                <li data-i18n="docEx1_P_Step4"></li>
+                                <li data-i18n="docEx1_P_Step5"></li>
+                            </ol>
+                        </div>
+                    </details>
+                    <hr class="doc-hr">
+                    <h3 data-i18n="docFaq"></h3>
+                    <details class="doc-details"><summary class="doc-summary"><strong data-i18n="docFaq_NotCopiedTitle"></strong></summary><div class="doc-dl"><p data-i18n="docFaq_NotCopiedDesc1"></p><p data-i18n="docFaq_NotCopiedDesc2"></p></div></details>
+                    <details class="doc-details"><summary class="doc-summary"><strong data-i18n="docFaq_AutoPlaceholderFailTitle"></strong></summary><div class="doc-dl"><p data-i18n="docFaq_AutoPlaceholderFailDesc1"></p><p data-i18n="docFaq_AutoPlaceholderFailDesc2"></p><p data-i18n="docFaq_AutoPlaceholderFailDesc3"></p></div></details>
+                    <details class="doc-details"><summary class="doc-summary"><strong data-i18n="docFaq_InvocationCycleTitle"></strong></summary><div class="doc-dl"><p data-i18n="docFaq_InvocationCycleDesc1"></p><ul><li data-i18n="docFaq_InvocationCycleEx1"></li><li data-i18n="docFaq_InvocationCycleEx2"></li><li data-i18n="docFaq_InvocationCycleEx3"></li></ul><p data-i18n="docFaq_InvocationCycleDesc2"></p></div></details>
+                    <details class="doc-details"><summary class="doc-summary"><strong data-i18n="docFaq_VarNotPromptedTitle"></strong></summary><div class="doc-dl"><p data-i18n="docFaq_VarNotPromptedDesc1"></p><p data-i18n="docFaq_VarNotPromptedDesc2"></p></div></details>
+                    <details class="doc-details"><summary class="doc-summary"><strong data-i18n="docFaq_BackupTitle"></strong></summary><div class="doc-dl"><p data-i18n="docFaq_BackupDesc1"></p><ul><li data-i18n="docFaq_BackupExport"></li><li data-i18n="docFaq_BackupImport"></li></ul></div></details>
+                    <details class="doc-details"><summary class="doc-summary"><strong data-i18n="docFaq_TagSearchFailTitle"></strong></summary><div class="doc-dl"><p data-i18n="docFaq_TagSearchFailDesc1"></p><p data-i18n="docFaq_TagSearchFailEx"></p><p data-i18n="docFaq_TagSearchFailDesc2"></p><p data-i18n="docFaq_TagSearchFailDesc3"></p></div></details>
+                    <details class="doc-details"><summary class="doc-summary"><strong data-i18n="docFaq_ReportBugTitle"></strong></summary><div class="doc-dl"><p data-i18n="docFaq_ReportBugDesc1"></p><p data-i18n="docFaq_ReportBugIdeal"></p><ul><li data-i18n="docFaq_ReportBugItem1"></li><li data-i18n="docFaq_ReportBugItem2"></li><li data-i18n="docFaq_ReportBugItem3"></li><li data-i18n="docFaq_ReportBugItem4"></li></ul></div></details>
+                    <hr class="doc-hr">
+                    <p class="doc-footer" data-i18n="docFooter"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="variableModal" class="modal-overlay" aria-modal="true" role="dialog" aria-labelledby="variableModalTitle">
+       <div class="modal-content">
+         <button type="button" class="close-modal" data-i18n-aria-label="btnFechar" aria-label="Fechar">&times;</button>
+         <h2 id="variableModalTitle" data-i18n="modalTitleVariables">Preencher Variáveis do Modelo</h2>
+         <form id="variableForm">
+           <div id="variableInputsContainer">
+             </div>
+           <div class="modal-actions">
+             <button type="submit" id="confirmVarBtn" class="btn-primary save-btn" data-i18n="btnConfirmAndProceed"><i class="fa-solid fa-check"></i> Confirmar e Prosseguir</button>
+             <button type="button" id="cancelVarBtn" class="btn-secondary delete-btn" data-i18n="btnCancel">Cancelar</button>
+           </div>
+         </form>
+       </div>
+    </div>
+
+    <div id="editModal" class="modal-overlay" aria-modal="true" role="dialog" aria-labelledby="editModalTitle">
+       <div class="modal-content">
+         <button type="button" class="close-modal" data-i18n-aria-label="btnFechar" aria-label="Fechar">&times;</button>
+         <h2 id="editModalTitle" data-i18n="modalTitleEdit">Editar Modelo</h2>
+         <form id="editForm">
+           <input type="hidden" id="editTemplateId">
+           <div class="form-group">
+             <label for="editNome" data-i18n="labelTemplateName">Nome (Único):</label>
+             <input type="text" id="editNome" required>
+           </div>
+           <div class="form-group">
+             <label for="editCategoria" data-i18n="labelTemplateCategory">Categoria:</label>
+             <input type="text" id="editCategoria" data-i18n-placeholder="placeholderTemplateCategory">
+           </div>
+           <div class="form-group">
+            <label for="editTags" data-i18n="labelTemplateTags">Tags (separadas por vírgula):</label>
+            <input type="text" id="editTags" data-i18n-placeholder="placeholderTemplateTags">
+          </div>
+           <div class="form-group">
+             <label for="editEditor" data-i18n="labelTemplateContent">Conteúdo:</label>
+             <div id="editEditor" aria-label="Editor de conteúdo do modelo para edição"></div>
+             <div id="editEditorCounter" class="editor-counter">0 caracteres, 0 palavras</div>
+           </div>
+            <div class="placeholder-helper">
+              <p data-i18n="dynamicFieldsModalHelpText">Inserir campos dinâmicos (Constantes/Variáveis Reutilizáveis):</p>
+              <div id="dynamicFieldsContainerModal" class="placeholder-buttons">
+                </div>
+            </div>
+           <div class="modal-actions">
+             <button type="submit" class="btn-primary save-btn" data-i18n="btnSaveEdits"><i class="fa-solid fa-save"></i> Salvar Alterações</button>
+             <button type="button" id="cancelEditBtn" class="btn-secondary delete-btn" data-i18n="btnCancel">Cancelar</button>
+           </div>
+           <div id="feedbackAreaEdit" class="feedback-area"></div>
+         </form>
+       </div>
+    </div>
+
+    <div id="modalInspector" class="modal-overlay" aria-modal="true" role="dialog" aria-labelledby="inspectorModalTitle">
+        <div class="modal-content">
+            <button type="button" class="close-modal" data-i18n-aria-label="btnFechar" aria-label="Fechar">&times;</button>
+            <h2 id="inspectorModalTitle" data-i18n="modalTitleInspector">Inspeção de Placeholders</h2>
+            <div id="inspectorContent" class="inspector-content">
+                <div class="inspector-section">
+                    <h3 data-i18n="inspectorAutomatic">Automáticos</h3>
+                    <ul id="inspectorAutomaticos"><li data-i18n="inspectorNoPlaceholders"></li></ul>
+                </div>
+                <div class="inspector-section">
+                    <h3 data-i18n="inspectorConstants">Constantes</h3>
+                    <div class="inspector-subsection">
+                        <h4 data-i18n="inspectorConstantsDefined">Definidas</h4>
+                        <ul id="inspectorConstantesDef"><li data-i18n="inspectorNoPlaceholders"></li></ul>
+                    </div>
+                    <div class="inspector-subsection">
+                        <h4 data-i18n="inspectorConstantsUndefined">Indefinidas</h4>
+                        <ul id="inspectorConstantesUndef"><li data-i18n="inspectorNoPlaceholders"></li></ul>
+                    </div>
+                </div>
+                <div class="inspector-section">
+                    <h3 data-i18n="inspectorVariables">Variáveis ({VAR:...})</h3>
+                    <ul id="inspectorVariaveis"><li data-i18n="inspectorNoPlaceholders"></li></ul>
+                </div>
+                 <div class="inspector-section">
+                    <h3 data-i18n="inspectorInputs">Inputs ({INPUT:...})</h3>
+                    <ul id="inspectorInputs"><li data-i18n="inspectorNoPlaceholders"></li></ul>
+                </div>
+                <div class="inspector-section">
+                    <h3 data-i18n="inspectorReusableVariables">Variáveis Reutilizáveis ({NOME_VAR})</h3>
+                    <ul id="inspectorReutilizaveis"><li data-i18n="inspectorNoPlaceholders"></li></ul>
+                </div>
+                <div class="inspector-section">
+                    <h3 data-i18n="inspectorInvocations">Invocações ({{...}})</h3>
+                    <div class="inspector-subsection">
+                        <h4 data-i18n="inspectorInvocationsFound">Encontradas</h4>
+                        <ul id="inspectorInvocacoesExist"><li data-i18n="inspectorNoPlaceholders"></li></ul>
+                    </div>
+                    <div class="inspector-subsection">
+                        <h4 data-i18n="inspectorInvocationsNotFound">Não Encontradas</h4>
+                        <ul id="inspectorInvocacoesNonexist"><li data-i18n="inspectorNoPlaceholders"></li></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="btnFecharInspector" class="btn-secondary" data-i18n="btnFechar">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalPreview" class="modal-overlay" aria-modal="true" role="dialog" aria-labelledby="previewModalTitle">
+        <div class="modal-content">
+            <button type="button" class="close-modal" data-i18n-aria-label="btnFechar" aria-label="Fechar">&times;</button>
+            <h2 id="previewModalTitle" data-i18n="modalTitlePreview">Pré-visualização do Modelo</h2>
+            <div id="previewContent" class="ql-snow"><div class="ql-editor"></div></div>
+            <div class="modal-actions">
+                <button id="btnCopiarPreview" class="btn-primary" data-i18n="btnCopiar">Copiar</button>
+                <button id="btnFecharPreview" class="btn-secondary" data-i18n="btnFechar">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editLinkModal" class="modal-overlay" aria-modal="true" role="dialog" aria-labelledby="editLinkModalTitle">
+        <div class="modal-content">
+            <button type="button" class="close-modal" data-i18n-aria-label="btnFechar" aria-label="Fechar">&times;</button>
+            <h2 id="editLinkModalTitle" data-i18n="modalTitleEditLink">Editar Link Salvo</h2>
+            <form id="editLinkForm">
+                <input type="hidden" id="editLinkId">
+                <div class="form-group">
+                    <label for="editLinkNome" data-i18n="labelLinkName">Nome:</label>
+                    <input type="text" id="editLinkNome" required data-i18n-placeholder="placeholderLinkName">
+                </div>
+                <div class="form-group">
+                    <label for="editLinkUrl" data-i18n="labelLinkURL">URL:</label>
+                    <input type="text" id="editLinkUrl" required data-i18n-placeholder="placeholderLinkURL">
+                </div>
+                <div class="form-group">
+                    <label for="editLinkCategoria" data-i18n="labelTemplateCategory">Categoria:</label>
+                    <input type="text" id="editLinkCategoria" data-i18n-placeholder="placeholderTemplateCategory">
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary save-btn" data-i18n="btnSaveEdits"><i class="fa-solid fa-save"></i> Salvar Alterações</button>
+                    <button type="button" id="cancelEditLinkBtn" class="btn-secondary delete-btn" data-i18n="btnCancel">Cancelar</button>
+                </div>
+                <div class="feedback-area-modal-link feedback-area"></div>
+            </form>
+        </div>
+    </div>
+
+    <div id="feedbackGlobalArea" class="feedback-area"></div>
+
+
+    <script src="libs/quill.min.js"></script>
+    <script src="libs/extenso.min.js"></script>
+    <script type="module" src="popup.js"></script>
+</body>
+</html>
